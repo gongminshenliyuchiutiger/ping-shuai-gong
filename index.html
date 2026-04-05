@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平甩功計數計時鍛鍊系統</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-glow"></div>
+    
+    <main class="app-container">
+        <header class="app-header">
+            <h1>平甩功計數計時鍛鍊系統</h1>
+            <div class="header-actions">
+                <button id="zen-btn" class="header-btn" title="進入沉浸暗屏模式">
+                    <i class="fas fa-moon"></i> <span>暗屏模式</span>
+                </button>
+            </div>
+            <div class="status-indicator">
+                <span id="session-status"><i class="fas fa-circle-play"></i> 準備就緒</span>
+                <span id="wakelock-status" class="status-icon" title="螢幕恆亮狀態"><i class="fas fa-sun"></i></span>
+            </div>
+        </header>
+
+        <section class="display-section">
+            <div class="counter-card glass">
+                <div class="counter-label">當前計數</div>
+                <div id="big-counter" class="counter-value">0</div>
+                <div id="action-hint" class="action-hint">準備開始</div>
+            </div>
+            
+            <div class="timer-card glass">
+                <div class="timer-label">剩餘時間</div>
+                <div id="time-display" class="timer-value">00:00</div>
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+            </div>
+            
+            <div class="stats-card glass full-width">
+                <div class="stats-item">
+                    <div class="stats-label">本節累計次數</div>
+                    <div id="total-counter" class="stats-value">0</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="control-panel glass">
+            <div class="control-group">
+                <label><i class="fas fa-clock"></i> 選擇時間</label>
+                <div class="time-presets">
+                    <button class="preset-btn" data-time="300">5分</button>
+                    <button class="preset-btn" data-time="600">10分</button>
+                    <button class="preset-btn" data-time="900">15分</button>
+                    <button class="preset-btn active" data-time="1200">20分</button>
+                    <button class="preset-btn" data-time="1800">30分</button>
+                    <button class="preset-btn" id="custom-time-btn">自訂</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label><i class="fas fa-volume-up"></i> 音效模式</label>
+                <div class="sound-modes">
+                    <button class="sound-btn active" data-mode="zen">禪意</button>
+                    <button class="sound-btn" data-mode="soft">柔和</button>
+                    <button class="sound-btn" data-mode="metallic">金屬</button>
+                    <button class="sound-btn" data-mode="nature">滴水</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label><i class="fas fa-tachometer-alt"></i> 頻率設定 (每分鐘次數)</label>
+                <div class="range-container">
+                    <input type="range" id="freq-slider" min="20" max="60" value="40" step="1">
+                    <span id="freq-value">40 次/分</span>
+                </div>
+            </div>
+
+            <div class="main-controls">
+                <button id="start-pause-btn" class="control-btn primary">
+                    <i class="fas fa-play"></i> <span>開始鍛鍊</span>
+                </button>
+                <button id="reset-btn" class="control-btn secondary">
+                    <i class="fas fa-undo"></i> <span>重置</span>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <div id="mascot-container" class="mascot-wrapper">
+        <img src="https://gongminshenliyuchiutiger.github.io/__public-useful__/image/LiyuChill.svg" alt="LiyuChillGuy" id="mascot-img">
+    </div>
+
+    <footer class="app-footer">
+        <p>系統發想來源：李鳳山師父平甩功</p>
+        <p>Copyright © Liyuchiutiger Gongminshen</p>
+    </footer>
+
+    <!-- Custom Time Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content glass">
+            <h3>自訂練習時間</h3>
+            <div class="input-group">
+                <input type="number" id="custom-minutes" min="1" max="180" value="15">
+                <span>分鐘</span>
+            </div>
+            <div class="modal-actions">
+                <button id="confirm-custom" class="modal-btn confirm">確認</button>
+                <button id="cancel-custom" class="modal-btn cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="zen-overlay" class="zen-overlay">
+        <div class="zen-content">
+            <div id="zen-big-counter" class="zen-counter">0</div>
+            <p>點擊螢幕任何處退出暗屏模式</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
