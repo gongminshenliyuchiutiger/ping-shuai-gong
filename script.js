@@ -167,6 +167,10 @@ function scheduleNote(countIndex, time) {
         osc.stop(time + 0.5);
       }
       break;
+    case 'oral':
+      // 口語模式：1, 2, 3, 4, 蹲
+      // 在計時器的 setTimeout 中觸發語音，以與 UI 同步
+      break;
     default:
       // 預設為禪意
       if (!isSquat) {
@@ -184,8 +188,35 @@ function scheduleNote(countIndex, time) {
   setTimeout(() => {
     if (!isRunning) return;
     totalSwings++;
+
+    // 如果是口語模式，在這裡觸發語音
+    if (soundMode === 'oral') {
+      speakCount(countIndex);
+    }
+
     updateUI(countIndex);
   }, Math.max(0, delay));
+}
+
+/**
+ * 語音合成輔助函數
+ */
+function speakCount(index) {
+  if (!('speechSynthesis' in window)) return;
+  
+  // 先取消之前的語音，確保節奏緊湊
+  window.speechSynthesis.cancel();
+  
+  const labels = ['一', '二', '三', '四', '蹲'];
+  const utterance = new SpeechSynthesisUtterance(labels[index]);
+  
+  // 設定語音參數，使其聽起來更自然且專業
+  utterance.lang = 'zh-TW';
+  utterance.rate = 1.2; // 稍快一點以符合動作節奏
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
+
+  window.speechSynthesis.speak(utterance);
 }
 
 function scheduler() {
