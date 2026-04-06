@@ -204,15 +204,26 @@ function scheduleNote(countIndex, time) {
 function speakCount(index) {
   if (!('speechSynthesis' in window)) return;
   
-  // 先取消之前的語音，確保節奏緊湊
-  window.speechSynthesis.cancel();
+  // 在某些手機瀏覽器，重複呼叫 cancel 會導致後續語音失效
+  // 只有當正在說話時才嘗試取消
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+  }
   
   const labels = ['一', '二', '三', '四', '蹲'];
   const utterance = new SpeechSynthesisUtterance(labels[index]);
   
-  // 設定語音參數，使其聽起來更自然且專業
+  // 設定語音參數
   utterance.lang = 'zh-TW';
-  utterance.rate = 1.2; // 稍快一點以符合動作節奏
+  // 如果 zh-TW 不存在，嘗試簡化為 zh
+  utterance.onerror = (e) => {
+    if (utterance.lang === 'zh-TW') {
+      utterance.lang = 'zh-CN'; // 至少有聲音
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  utterance.rate = 1.3; // 稍微再快一點點，避免延遲
   utterance.pitch = 1.0;
   utterance.volume = 1.0;
 
@@ -297,6 +308,13 @@ function startExercise() {
   updateMediaSession();
   isRunning = true;
   nextNoteTime = audioCtx.currentTime;
+  
+  // 手機版語音啟動 (User Gesture 授權)
+  if ('speechSynthesis' in window) {
+    const silentUtterance = new SpeechSynthesisUtterance('');
+    window.speechSynthesis.speak(silentUtterance);
+  }
+
   startPauseBtn.innerHTML = '<i class="fas fa-pause"></i> <span>暫停鍛鍊</span>';
   timerID = setInterval(scheduler, scheduleInterval);
   secondTimerID = setInterval(tickTimer, 1000);
@@ -353,6 +371,13 @@ document.querySelectorAll('.sound-btn').forEach(btn => {
     // 試聽一聲
     initAudio();
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    // 手機版語音試聽預熱
+    if (soundMode === 'oral' && 'speechSynthesis' in window) {
+      const silentUtterance = new SpeechSynthesisUtterance('');
+      window.speechSynthesis.speak(silentUtterance);
+    }
+    
     scheduleNote(0, audioCtx.currentTime + 0.05);
   });
 });
@@ -432,6 +457,14 @@ function init() {
     else btn.classList.remove('active');
   });
   
+  // 初始化語音引擎 (預讀取語音清單，對手機版相容性有助益)
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+  }
+
   updateTimerDisplay();
 }
 
