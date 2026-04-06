@@ -7,6 +7,8 @@
 
 // --- 全域變數 ---
 let audioCtx = null;
+let masterGain = null;
+let compressor = null;
 let isRunning = false;
 let currentCount = 0; 
 let totalSwings = 0;
@@ -50,6 +52,22 @@ const cancelCustomBtn = document.getElementById('cancel-custom');
 function initAudio() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // 建立主增益節點 (Master Gain)
+    masterGain = audioCtx.createGain();
+    masterGain.gain.setValueAtTime(1.8, audioCtx.currentTime); // 預設 1.8 倍增益
+    
+    // 建立動態壓縮器 (DynamicsCompressor) 防止破音
+    compressor = audioCtx.createDynamicsCompressor();
+    compressor.threshold.setValueAtTime(-10, audioCtx.currentTime);
+    compressor.knee.setValueAtTime(40, audioCtx.currentTime);
+    compressor.ratio.setValueAtTime(12, audioCtx.currentTime);
+    compressor.attack.setValueAtTime(0, audioCtx.currentTime);
+    compressor.release.setValueAtTime(0.25, audioCtx.currentTime);
+    
+    // 連接鏈：音效 -> masterGain -> compressor -> destination
+    masterGain.connect(compressor);
+    compressor.connect(audioCtx.destination);
   }
 }
 
@@ -76,7 +94,7 @@ function playTone(params) {
   
   osc.connect(filter);
   filter.connect(gain);
-  gain.connect(audioCtx.destination);
+  gain.connect(masterGain || audioCtx.destination);
   
   osc.start(params.time);
   osc.stop(params.time + decay);
@@ -119,10 +137,10 @@ function scheduleNote(countIndex, time) {
         osc.frequency.setValueAtTime(1200, time);
         osc.frequency.exponentialRampToValueAtTime(1800, time + 0.05);
         gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(0.6, time + 0.01);
+        gain.gain.linearRampToValueAtTime(0.8, time + 0.01);
         gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(masterGain || audioCtx.destination);
         osc.start(time);
         osc.stop(time + 0.1);
       } else {
@@ -139,12 +157,12 @@ function scheduleNote(countIndex, time) {
         osc.frequency.exponentialRampToValueAtTime(80, time + 0.15);
         
         gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(1.5, time + 0.02);
+        gain.gain.linearRampToValueAtTime(2.0, time + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
         
         osc.connect(filter);
         filter.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(masterGain || audioCtx.destination);
         osc.start(time);
         osc.stop(time + 0.5);
       }
