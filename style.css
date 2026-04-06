@@ -479,6 +479,10 @@ input[type="range"] {
   align-items: center;
 }
 
+.modal.active {
+  display: flex;
+}
+
 .modal-content {
   width: 90%;
   max-width: 400px;

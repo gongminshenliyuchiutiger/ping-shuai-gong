@@ -39,6 +39,13 @@ const mascotContainer = document.getElementById('mascot-container');
 const zenBtn = document.getElementById('zen-btn');
 const zenOverlay = document.getElementById('zen-overlay');
 
+// --- Modal 元素 ---
+const customTimeBtn = document.getElementById('custom-time-btn');
+const customModal = document.getElementById('custom-modal');
+const customMinutesInput = document.getElementById('custom-minutes');
+const confirmCustomBtn = document.getElementById('confirm-custom');
+const cancelCustomBtn = document.getElementById('cancel-custom');
+
 // --- 音頻引擎與音效合成 ---
 function initAudio() {
   if (!audioCtx) {
@@ -50,7 +57,7 @@ function initAudio() {
  * 核心合成器
  */
 function playTone(params) {
-  const { freq, type = 'sine', decay = 0.5, resonance = 5, vol = 0.6, filterType = 'bandpass', attack = 0.005 } = params;
+  const { freq, type = 'sine', decay = 0.5, resonance = 5, vol = 0.8, filterType = 'bandpass', attack = 0.005 } = params;
   
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
@@ -87,20 +94,20 @@ function scheduleNote(countIndex, time) {
       } else {
         // 禪意二次強化：衝擊層 + 主體層 + 底蘊層
         // 1. 衝擊層 (Impact/Click) - 極短高頻讓耳朵捕捉節拍
-        playTone({ freq: 1760, type: 'triangle', decay: 0.05, vol: 0.4, time });
+        playTone({ freq: 1760, type: 'triangle', decay: 0.05, vol: 0.6, time });
         // 2. 主體層 (Body) - 響亮的中低音 (E4)，在多數喇叭表現較佳
-        playTone({ freq: 330, type: 'triangle', decay: 1.2, resonance: 10, vol: 1.0, time });
+        playTone({ freq: 330, type: 'triangle', decay: 1.2, resonance: 10, vol: 1.5, time });
         // 3. 底蘊層 (Depth) - 增加厚度
-        playTone({ freq: 110, type: 'sine', decay: 0.8, vol: 0.8, time });
+        playTone({ freq: 110, type: 'sine', decay: 0.8, vol: 1.2, time });
       }
       break;
       
     case 'soft':
       if (!isSquat) {
-        playTone({ freq: 330, type: 'sine', decay: 0.2, filterType: 'lowpass', time, vol: 0.4 });
+        playTone({ freq: 330, type: 'sine', decay: 0.2, filterType: 'lowpass', time, vol: 0.7 });
       } else {
         // 下蹲強化：頻率微調提高增加聽感亮度，音量大幅提升
-        playTone({ freq: 185, type: 'sine', decay: 1.2, filterType: 'lowpass', time, vol: 1.0 });
+        playTone({ freq: 185, type: 'sine', decay: 1.2, filterType: 'lowpass', time, vol: 1.5 });
       }
       break;
       
@@ -112,7 +119,7 @@ function scheduleNote(countIndex, time) {
         osc.frequency.setValueAtTime(1200, time);
         osc.frequency.exponentialRampToValueAtTime(1800, time + 0.05);
         gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(0.3, time + 0.01);
+        gain.gain.linearRampToValueAtTime(0.6, time + 0.01);
         gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -132,7 +139,7 @@ function scheduleNote(countIndex, time) {
         osc.frequency.exponentialRampToValueAtTime(80, time + 0.15);
         
         gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(1.0, time + 0.02);
+        gain.gain.linearRampToValueAtTime(1.5, time + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
         
         osc.connect(filter);
@@ -148,9 +155,9 @@ function scheduleNote(countIndex, time) {
         playTone({ freq: 880, type: 'triangle', decay: 0.1, resonance: 10, time });
       } else {
         // 預設與禪意強化同步
-        playTone({ freq: 1760, type: 'triangle', decay: 0.05, vol: 0.4, time });
-        playTone({ freq: 330, type: 'triangle', decay: 1.2, resonance: 10, vol: 1.0, time });
-        playTone({ freq: 110, type: 'sine', decay: 0.8, vol: 0.8, time });
+        playTone({ freq: 1760, type: 'triangle', decay: 0.05, vol: 0.6, time });
+        playTone({ freq: 330, type: 'triangle', decay: 1.2, resonance: 10, vol: 1.5, time });
+        playTone({ freq: 110, type: 'sine', decay: 0.8, vol: 1.2, time });
       }
       break;
   }
@@ -313,6 +320,32 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
 
 zenBtn.addEventListener('click', () => zenOverlay.classList.add('active'));
 zenOverlay.addEventListener('click', () => zenOverlay.classList.remove('active'));
+
+// 自訂時間 Modal 邏輯
+customTimeBtn.addEventListener('click', () => {
+    customModal.classList.add('active');
+});
+
+cancelCustomBtn.addEventListener('click', () => {
+    customModal.classList.remove('active');
+});
+
+confirmCustomBtn.addEventListener('click', () => {
+    const mins = parseInt(customMinutesInput.value);
+    if (isNaN(mins) || mins < 1 || mins > 180) {
+        alert('請輸入 1 到 180 之間的分鐘數。');
+        return;
+    }
+    
+    totalDuration = mins * 60;
+    
+    // 更新按鈕狀態
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    customTimeBtn.classList.add('active');
+    
+    customModal.classList.remove('active');
+    resetExercise();
+});
 
 // 吉祥物拖曳
 let isDragging = false;
