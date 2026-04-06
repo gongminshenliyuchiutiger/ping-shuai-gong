@@ -534,24 +534,102 @@ input[type="range"] {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-  .display-section {
-    grid-template-columns: 1fr;
+/* Optimized Responsive Layout */
+@media (max-width: 600px) {
+  .app-container {
+    margin: 0.5rem auto;
+    padding: 0.5rem;
+  }
+  
+  .app-header {
+    margin-bottom: 1rem;
   }
   
   .app-header h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
+  }
+
+  .header-actions {
+    margin-bottom: 0.5rem;
+  }
+
+  .display-section {
+    grid-template-columns: 1fr 1fr; /* Keep side-by-side */
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .counter-card, .timer-card {
+    padding: 0.8rem 0.4rem;
+    border-radius: 12px;
   }
 
   .counter-value {
-    font-size: 5rem;
+    font-size: 3rem;
+    margin: 0.4rem 0;
   }
 
   .timer-value {
-    font-size: 3rem;
+    font-size: 1.8rem;
+    margin: 0.4rem 0;
+  }
+
+  .action-hint {
+    font-size: 0.9rem;
+  }
+
+  .stats-card {
+    padding: 0.8rem;
+  }
+
+  .stats-value {
+    font-size: 1.8rem;
+  }
+
+  .control-panel {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .control-group {
+    margin-bottom: 1.2rem;
+  }
+
+  .control-group label {
+    font-size: 0.85rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .preset-btn, .sound-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+    min-width: 60px;
   }
 
   .main-controls {
-    flex-direction: column;
+    gap: 0.8rem;
   }
+
+  .control-btn {
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+
+  .mascot-wrapper {
+    width: 60px;
+    height: 60px;
+    bottom: 1rem;
+    left: 1rem;
+  }
+
+  .zen-counter {
+    font-size: 10rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  .counter-value { font-size: 2.2rem; }
+  .timer-value { font-size: 1.5rem; }
+  .app-header h1 { font-size: 1.2rem; }
 }

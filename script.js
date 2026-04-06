@@ -75,46 +75,33 @@ function playTone(params) {
   osc.stop(params.time + decay);
 }
 
-/**
- * 金屬音色合成器 (加法合成)
- */
-function playMetallicTone(freq, time, decay = 1.0, vol = 0.4) {
-  // 模擬不諧和諧音
-  const ratios = [1, 1.5, 2.3, 3.1];
-  ratios.forEach((ratio, i) => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq * ratio, time);
-    
-    gain.gain.setValueAtTime(0, time);
-    gain.gain.linearRampToValueAtTime(vol / (i + 1), time + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + decay / (i + 1));
-    
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(time);
-    osc.stop(time + decay);
-  });
-}
+
 
 function scheduleNote(countIndex, time) {
   const isSquat = countIndex === 4;
 
   switch (soundMode) {
     case 'zen':
-      if (!isSquat) playTone({ freq: 880, type: 'triangle', decay: 0.1, resonance: 10, time });
-      else playTone({ freq: 220, type: 'triangle', decay: 0.8, resonance: 5, vol: 0.7, time });
+      if (!isSquat) {
+        playTone({ freq: 880, type: 'triangle', decay: 0.1, resonance: 10, time });
+      } else {
+        // 禪意二次強化：衝擊層 + 主體層 + 底蘊層
+        // 1. 衝擊層 (Impact/Click) - 極短高頻讓耳朵捕捉節拍
+        playTone({ freq: 1760, type: 'triangle', decay: 0.05, vol: 0.4, time });
+        // 2. 主體層 (Body) - 響亮的中低音 (E4)，在多數喇叭表現較佳
+        playTone({ freq: 330, type: 'triangle', decay: 1.2, resonance: 10, vol: 1.0, time });
+        // 3. 底蘊層 (Depth) - 增加厚度
+        playTone({ freq: 110, type: 'sine', decay: 0.8, vol: 0.8, time });
+      }
       break;
       
     case 'soft':
-      if (!isSquat) playTone({ freq: 330, type: 'sine', decay: 0.2, filterType: 'lowpass', time, vol: 0.4 });
-      else playTone({ freq: 165, type: 'sine', decay: 1.0, filterType: 'lowpass', time, vol: 0.5 });
-      break;
-      
-    case 'metallic':
-      if (!isSquat) playMetallicTone(1200, time, 0.3, 0.3); // 銅鈴
-      else playMetallicTone(110, time, 2.0, 0.6); // 大鐘
+      if (!isSquat) {
+        playTone({ freq: 330, type: 'sine', decay: 0.2, filterType: 'lowpass', time, vol: 0.4 });
+      } else {
+        // 下蹲強化：頻率微調提高增加聽感亮度，音量大幅提升
+        playTone({ freq: 185, type: 'sine', decay: 1.2, filterType: 'lowpass', time, vol: 1.0 });
+      }
       break;
       
     case 'nature':
@@ -132,8 +119,38 @@ function scheduleNote(countIndex, time) {
         osc.start(time);
         osc.stop(time + 0.1);
       } else {
-        // 沉重的落水聲
-        playTone({ freq: 150, type: 'sine', decay: 0.8, filterType: 'lowpass', time, vol: 0.6 });
+        // 強化滴水感：深水滴 (Deep Plop)
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1000, time);
+        filter.frequency.exponentialRampToValueAtTime(100, time + 0.2);
+        
+        osc.frequency.setValueAtTime(600, time);
+        osc.frequency.exponentialRampToValueAtTime(80, time + 0.15);
+        
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(1.0, time + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+        
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(time);
+        osc.stop(time + 0.5);
+      }
+      break;
+    default:
+      // 預設為禪意
+      if (!isSquat) {
+        playTone({ freq: 880, type: 'triangle', decay: 0.1, resonance: 10, time });
+      } else {
+        // 預設與禪意強化同步
+        playTone({ freq: 1760, type: 'triangle', decay: 0.05, vol: 0.4, time });
+        playTone({ freq: 330, type: 'triangle', decay: 1.2, resonance: 10, vol: 1.0, time });
+        playTone({ freq: 110, type: 'sine', decay: 0.8, vol: 0.8, time });
       }
       break;
   }
@@ -320,6 +337,12 @@ mascotContainer.addEventListener('pointerup', () => isDragging = false);
 function init() {
   freqSlider.value = frequency;
   freqValue.textContent = `${frequency} 次/分`;
+  
+  // 如果舊有的設定是已移除的 'metallic'，強制改回 'zen'
+  if (soundMode === 'metallic') {
+    soundMode = 'zen';
+    localStorage.setItem('ping-shuai-sound-mode', soundMode);
+  }
   
   // 恢復音效模式按鈕狀態
   document.querySelectorAll('.sound-btn').forEach(btn => {
